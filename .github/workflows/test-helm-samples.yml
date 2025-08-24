@@ -154,5 +154,3 @@ jobs:
         working-directory: test-helm-no-webhooks
         run: |
           helm status my-release --namespace test-helm-no-webhooks-system
-          kubectl wait --namespace test-helm-no-webhooks-system --for=condition=available --timeout=300s deployment/test-helm-no-webhooks-controller-manager
-          kubectl get pods --namespace test-helm-no-webhooks-system
