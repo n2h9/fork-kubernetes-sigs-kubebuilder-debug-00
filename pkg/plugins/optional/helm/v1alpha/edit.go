@@ -18,9 +18,9 @@ package v1alpha
 
 import (
 	"fmt"
+	log "log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/pflag"
 
@@ -97,22 +97,7 @@ func (p *editSubcommand) PostScaffold() error {
 	if hasWebhooks {
 		workflowFile := filepath.Join(".github", "workflows", "test-chart.yml")
 		if _, err := os.Stat(workflowFile); err == nil {
-			// Check if cert-manager is already uncommented to prevent double processing
-			// this is required, because we call twice to `kubebuilder edit` during `make generate`:
-			// - test/testdata/generate.sh:114 during generate-testdata
-			// - In Makefile line for generate-charts target
-			// this approach also preserves an error if there is no code to uncomment during the first run
-			content, err := os.ReadFile(workflowFile)
-			if err != nil {
-				return fmt.Errorf("failed to read workflow file %q: %w", workflowFile, err)
-			}
-
-			// If cert-manager installation step is already uncommented, skip
-			if strings.Contains(string(content), "- name: Install cert-manager via Helm") &&
-				!strings.Contains(string(content), "#      - name: Install cert-manager via Helm") {
-				return nil
-			}
-
+			//nolint:lll
 			target := `
 #      - name: Install cert-manager via Helm
 #        run: |
@@ -126,7 +111,9 @@ func (p *editSubcommand) PostScaffold() error {
 #          kubectl wait --namespace cert-manager --for=condition=available --timeout=300s deployment/cert-manager-cainjector
 #          kubectl wait --namespace cert-manager --for=condition=available --timeout=300s deployment/cert-manager-webhook`
 
-			return util.UncommentCode(workflowFile, target, "#")
+			if err := util.UncommentCode(workflowFile, target, "#"); err != nil {
+				log.Warn("Failed to uncomment cert-manager installation in workflow file", "error", err, "file", workflowFile)
+			}
 		}
 	}
 	return nil
