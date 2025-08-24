@@ -100,7 +100,6 @@ jobs:
   # - kubebuilder edit --plugins=helm.kubebuilder.io/v1-alpha
   test-helm-no-webhooks:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
