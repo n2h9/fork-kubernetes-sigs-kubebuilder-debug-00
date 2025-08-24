@@ -122,8 +122,8 @@ jobs:
         run: |
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-      - name: Build kubebuilder binary
-        run: make build
+      - name: Install kubebuilder binary
+        run: make install
 
       - name: Create test directory
         run: mkdir -p test-helm-no-webhooks
@@ -132,9 +132,9 @@ jobs:
         working-directory: test-helm-no-webhooks
         run: |
           go mod init test-helm-no-webhooks
-          ../bin/kubebuilder init
-          ../bin/kubebuilder create api --group example.com --version v1 --kind App --controller=true --resource=true
-          ../bin/kubebuilder edit --plugins=helm.kubebuilder.io/v1-alpha
+          kubebuilder init
+          kubebuilder create api --group example.com --version v1 --kind App --controller=true --resource=true
+          kubebuilder edit --plugins=helm.kubebuilder.io/v1-alpha
 
       - name: Build and load Docker image
         working-directory: test-helm-no-webhooks
